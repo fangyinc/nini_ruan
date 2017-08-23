@@ -69,7 +69,7 @@ class UserResource(Resource):
 	def get(self, user_id=None):
 		user = User.get_by_id(user_id)
 		if user is not None:
-			return user
+			return user, {'Access-Control-Allow-Origin': '*'}
 		abort(404)
 
 	@marshal_with(user_fields)
@@ -185,3 +185,5 @@ auth.add_resource(UserAdminResource, '/users/token', '/users/query')
 
 auth.add_resource(UserCollectionResource, '/users／query/all')
 auth.add_resource(TestResource, '/test')
+
+#auth.make_response({'Access-Control-Allow-Origin': '*'})
