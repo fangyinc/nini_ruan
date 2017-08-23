@@ -76,7 +76,7 @@ class UserResource(Resource):
 	def post(self):
 		'''用户注册'''
 		user = User.create(**user_register_parser.parse_args())
-		return user, 201
+		return user, 201, {'Access-Control-Allow-Origin': '*'}
 
 	@jwt_required()
 	def put(self):
@@ -89,8 +89,8 @@ class UserResource(Resource):
 		'''
 		status = g.user.update(**user_register_parser.parse_args())
 		if status:
-			return {}, 200
-		return {}, 401
+			return {}, 200, {'Access-Control-Allow-Origin': '*'}
+		return {}, 401, {'Access-Control-Allow-Origin': '*'}
 
 	@jwt_required()
 	@self_only
@@ -98,8 +98,8 @@ class UserResource(Resource):
 		'''用户删除'''
 		status = g.user.delete()
 		if status:
-			return {}, 200
-		return {}, 401
+			return {}, 200, {'Access-Control-Allow-Origin': '*'}
+		return {}, 401, {'Access-Control-Allow-Origin': '*'}
 
 
 	#method_decorators = [jwt_required()]
@@ -139,10 +139,10 @@ class UserAdminResource(Resource):
 		data = user_full_parser.parse_args()
 		username = data.get('username')
 		if username is not None:
-			return User.get_user(username=username)
+			return User.get_user(username=username), {'Access-Control-Allow-Origin': '*'}
 		email = data.get('email')
 		if email is not None:
-			return User.get_user(email=email)
+			return User.get_user(email=email), {'Access-Control-Allow-Origin': '*'}
 		#abort(404)
 	#获取JWT toke
 	def post(self):
@@ -176,7 +176,7 @@ class UserAdminResource(Resource):
 		user = g.user.to_json()
 		token.update(exp)					#添加过期时间dict中
 		token.update({'user':user})					#添加用户信息dict中
-		return  token, 201
+		return  token, 201, {'Access-Control-Allow-Origin': '*'}
 
 
 #用户增删查改
