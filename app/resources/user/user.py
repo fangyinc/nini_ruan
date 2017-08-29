@@ -9,6 +9,7 @@ from app.models.user import User
 from app import jwt
 import json
 from app.common.authentication import self_only
+from app.common.authentication import get_token_response, login_required
 
 #from .decorators import login_required
 from app.helpers import paginate
@@ -47,6 +48,7 @@ user_collection_fields = {
 
 class TestResource(Resource):
 	#method_decorators = [jwt_required()]
+	@login_required
 	@marshal_with(user_fields)
 	def get(self, user_id=None):
 		user = User.get_by_id(user_id)
@@ -59,12 +61,15 @@ class TestResource(Resource):
 		#print('g.user: ',g.user)
 		#g.user.update(**user_parser.parse_args())
 		#return g.user
-		print(request.json)
-		return 'hehe'
+		data = user_parser.parse_args()
+		token = get_token_response(**data)
+		#print(request.json)
+		return token
 
 #CUDM
 class UserResource(Resource):
 
+	@login_required
 	@marshal_with(user_fields)
 	def get(self, user_id=None):
 		user = User.get_by_id(user_id)
@@ -78,7 +83,9 @@ class UserResource(Resource):
 		user = User.create(**user_register_parser.parse_args())
 		return user, 201, {'Access-Control-Allow-Origin': '*'}
 
-	@jwt_required()
+	#@jwt_required()
+	@login_required
+	@self_only
 	def put(self):
 		'''
 		修改用户信息，　需要登录
@@ -92,7 +99,8 @@ class UserResource(Resource):
 			return {}, 200, {'Access-Control-Allow-Origin': '*'}
 		return {}, 401, {'Access-Control-Allow-Origin': '*'}
 
-	@jwt_required()
+	#@jwt_required()
+	@login_required
 	@self_only
 	def delete(self):
 		'''用户删除'''
@@ -168,15 +176,20 @@ class UserAdminResource(Resource):
 			json={"username":"1000test3","password":"test3"})
 
 		'''
-		token_raw_res=jwt.auth_request_callback()
-		token = json.loads(token_raw_res.get_data().decode('utf-8'))	#获取dict token
+		#print(request.headers)
+		#token_raw_res=jwt.auth_request_callback()
+		#token = json.loads(token_raw_res.get_data().decode('utf-8'))	#获取dict token
+
+		data = user_parser.parse_args()
+		token = get_token_response(**data)
 		exp={}
 		#从配置文件获取token过期时间
 		exp['expiration']=int((current_app.config.get('JWT_EXPIRATION_DELTA')).total_seconds())
 		user = g.user.to_json()
 		token.update(exp)					#添加过期时间dict中
 		token.update({'user':user})					#添加用户信息dict中
-		return  token, 201, {'Access-Control-Allow-Origin': '*'}
+		return token, {'Access-Control-Allow-Origin': '*'}
+		#return  'ss', {'Access-Control-Allow-Origin': 'http://localhost:63343', 'Access-Control-Allow-Credentials': True}
 
 
 #用户增删查改
