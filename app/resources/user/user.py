@@ -181,16 +181,8 @@ class UserAdminResource(Resource):
 		#token = json.loads(token_raw_res.get_data().decode('utf-8'))	#获取dict token
 
 		data = user_parser.parse_args()
-		token = get_token_response(**data)
-		exp={}
-		#从配置文件获取token过期时间
-		exp['expiration']=int((current_app.config.get('JWT_EXPIRATION_DELTA')).total_seconds())
-		user = g.user.to_json()
-		token.update(exp)					#添加过期时间dict中
-		token.update({'user':user})					#添加用户信息dict中
-		return token, {'Access-Control-Allow-Origin': '*'}
-		#return  'ss', {'Access-Control-Allow-Origin': 'http://localhost:63343', 'Access-Control-Allow-Credentials': True}
-
+		token_response = get_token_response(**data)
+		return token_response
 
 #用户增删查改
 auth.add_resource(UserResource, '/users', '/users/<int:user_id>')

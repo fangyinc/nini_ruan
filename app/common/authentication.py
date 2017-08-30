@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #-*- coding: UTF-8 -*-
 import functools
-from flask import g, abort, current_app, request, jsonify
+from flask import g, abort, current_app, request, jsonify, make_response
 from app.models.user import  User
 from datetime import datetime, timedelta
 import jwt
@@ -26,7 +26,6 @@ def authenticate(username, password):
 		return user
 	return None
 
-
 def self_only(func):
 	@functools.wraps(func)
 	def wrapper(*args, **kwargs):
@@ -38,7 +37,6 @@ def self_only(func):
 				abort(403)
 		return func(*args, **kwargs)
 	return wrapper
-
 
 # JWT AUTh process start
 def create_token(user):
@@ -54,13 +52,24 @@ def get_token_response(**kwargs):
 	user = authenticate(kwargs.get('username'), kwargs.get('password'))
 	if user is None:
 		return unauthorized('invalid　username or password')
-	token = create_token(user)
-	return {'access_token': token}
+	token_value = create_token(user)
+	token={}
+	token['access_token']= token_value
+	exp = {}
+	# 从配置文件获取token过期时间
+	exp['expiration'] = int((current_app.config.get('JWT_EXPIRATION_DELTA')).total_seconds())
+	user = g.user.to_json()
+	token.update(exp)  # 添加过期时间dict中
+	token.update({'user': user})  # 添加用户信息dict中
+
+	response = make_response(jsonify(token))
+	response.status_code = 201
+	response.headers['Access-Control-Allow-Origin'] = '*'
+	return response
 
 def parse_token(req):
 	token = req.headers.get('Authorization').split()[1]
 	return jwt.decode(token, current_app.config['SECRET_KEY'], algorithms='HS256')
-
 
 def login_required(f):
 	@wraps(f)
