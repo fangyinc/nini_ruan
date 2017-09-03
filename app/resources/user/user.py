@@ -196,6 +196,6 @@ auth.add_resource(UserCollectionResource, '/users／query/all')
 auth.add_resource(TestResource, '/test')
 
 #rfid_test
-auth.add_resource(TestResource, '/company-info')
+auth.add_resource(RFIDResource, '/company-info')
 
 #auth.make_response({'Access-Control-Allow-Origin': '*'})
