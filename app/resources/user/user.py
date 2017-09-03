@@ -184,11 +184,18 @@ class UserAdminResource(Resource):
 		token_response = get_token_response(**data)
 		return token_response
 
+class RFIDResource(Resource):
+	def post(self):
+		return {'url':'http://120.25.227.42:8880/auth/users/token'}, 201
+
 #用户增删查改
 auth.add_resource(UserResource, '/users', '/users/<int:user_id>')
 auth.add_resource(UserAdminResource, '/users/token', '/users/query')
 
 auth.add_resource(UserCollectionResource, '/users／query/all')
 auth.add_resource(TestResource, '/test')
+
+#rfid_test
+auth.add_resource(TestResource, '/company-info')
 
 #auth.make_response({'Access-Control-Allow-Origin': '*'})
